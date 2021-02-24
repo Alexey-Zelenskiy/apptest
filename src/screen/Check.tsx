@@ -106,7 +106,7 @@ const Check = ({data}: Props) => {
 
 	useEffect(() => {
 		if (history) return;
-		navigation.navigate(Routes.Camera);
+		// navigation.navigate(Routes.Camera);
 		setCheckPanelDown(v4());
 	}, [openCamera]);
 

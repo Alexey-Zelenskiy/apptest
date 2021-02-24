@@ -41,7 +41,7 @@ import CropBottomPanel from "../components/cropBottomPanel/CropBottomPanel";
 import useTranslation from "../hooks/useTranslation";
 import {storeGeoAction} from "../actions/storage";
 import Geolocation from "react-native-geolocation-service";
-import {PERMISSIONS, request} from "react-native-permissions";
+import {PERMISSIONS, request, check} from "react-native-permissions";
 import {getUniqueId} from "react-native-device-info";
 import {loadData} from "../api";
 import messaging from "@react-native-firebase/messaging";
@@ -222,26 +222,9 @@ const Camera = () => {
 	// }, []);
 
 
-	const [externalStorage, setExternalStorage] = useState<any>(undefined)
+	const [externalStorage, setExternalStorage] = useState<any>(false)
 
-	useEffect(()=>{
-		Platform.OS === 'android' ?
-			request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
-				.then(result => {
-					console.log('PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE', result);
-					setExternalStorage(result)
-				})
-				.catch(error => {
-					console.log(error);
-				}) : request(PERMISSIONS.IOS.PHOTO_LIBRARY)
-				.then(result => {
-					console.log('PERMISSIONS.IOS.PHOTO_LIBRARY', result);
-					setExternalStorage(result)
-				})
-				.catch(error => {
-					console.log(error);
-				})
-	},[])
+	const [onPressGallery, setOnPressGallery] = useState<boolean>(false)
 
 	const setToken = (token: any) => dispatch(setFcm(token));
 
@@ -276,6 +259,23 @@ const Camera = () => {
 	useEffect(() => {
 		requestUserPermission().then();
 	}, []);
+
+	const requestStoragePermission = async () => {
+		const granted = Platform.OS === 'android' 
+		? await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then()
+		: await check(PERMISSIONS.IOS.PHOTO_LIBRARY).then();
+		if(granted == 'granted'){
+			setExternalStorage(true);
+		} else if(onPressGallery && granted === 'denied'){
+			setExternalStorage(false);
+		}
+	};
+
+	useEffect(() => {
+		if(!externalStorage || externalStorage === undefined){
+			requestStoragePermission().then()
+		}
+	}, [externalStorage]);
 
 	const camera = useRef<RNCamera | null>(null);
 
@@ -331,8 +331,26 @@ const Camera = () => {
 		}
 	};
 
-	const choiceFileFormGallery = () => {
-		if(externalStorage !== 'denied' || externalStorage !== 'blocked'){
+	const choiceFileFormGallery = async () => {
+		setOnPressGallery(true);
+		Platform.OS === 'android' ?
+		request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
+			.then(result => {
+				console.log('PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE', result);
+			})
+			.catch(error => {
+				console.log(error);
+			}) : request(PERMISSIONS.IOS.PHOTO_LIBRARY)
+			.then(result => {
+				console.log('PERMISSIONS.IOS.PHOTO_LIBRARY', result);
+			})
+			.catch(error => {
+				console.log(error);
+			})
+			if(!externalStorage || externalStorage === undefined){
+				await requestStoragePermission();
+			}
+		if(externalStorage){
 			ImagePicker.launchImageLibrary({}, async (response) => {
 				if (response.didCancel || response.error) return;
 				const newFile = await ImageResizer.createResizedImage(response.uri, 1000, 1000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
@@ -482,7 +500,7 @@ const Camera = () => {
 							{loading}
 						</TouchableOpacity>
 					</View>
-					{externalStorage!== 'denied' && <View style={{flex: 1, justifyContent: "center", alignItems: 'center'}}>
+					{externalStorage!==false && <View style={{flex: 1, justifyContent: "center", alignItems: 'center'}}>
 						<TouchableOpacity onPress={choiceFileFormGallery}>
 							<Image source={galleryIcon}/>
 						</TouchableOpacity>
