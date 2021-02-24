@@ -150,7 +150,6 @@ const App = () => {
           },
           {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
         );
-        await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA);
       } else {
         Alert.alert(
           'Denied',

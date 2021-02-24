@@ -92,9 +92,9 @@ const Camera = () => {
 					[
 						{
 							text: 'OK',
-							onPress: async () => {
+							onPress: () => {
 								Platform.OS === 'android'  ?
-								await request(PERMISSIONS.ANDROID.CAMERA)
+								 request(PERMISSIONS.ANDROID.CAMERA)
 									.then(result => {
 										setPermission(true);
 										console.log(
@@ -104,7 +104,7 @@ const Camera = () => {
 									})
 									.catch(error => {
 										console.log(error);
-									}) : await request(PERMISSIONS.IOS.CAMERA)
+									}) :  request(PERMISSIONS.IOS.CAMERA)
 										.then(result => {
 											setPermission(true);
 											console.log(
@@ -127,10 +127,8 @@ const Camera = () => {
 	};
 
 	useEffect(() => {
-			if (!permission) {
 				requestLocationPermission().then();
-		}
-	}, [permission, requestLocationPermission]);
+	}, []);
 
 	useEffect(() => {
 		if (!isUploading) {
@@ -222,7 +220,7 @@ const Camera = () => {
 	// }, []);
 
 
-	const [externalStorage, setExternalStorage] = useState<any>(false)
+	const [externalStorage, setExternalStorage] = useState<any>(undefined)
 
 	const [onPressGallery, setOnPressGallery] = useState<boolean>(false)
 
