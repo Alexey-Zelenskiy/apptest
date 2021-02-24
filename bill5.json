@@ -1,0 +1,425 @@
+{
+  "location": {
+    "city": {
+      "geoname_id": 617239,
+      "names": {
+        "de": "Tiraspol",
+        "en": "Tiraspol",
+        "es": "Tiráspol",
+        "fr": "Tiraspol",
+        "ja": "ティラスポリ",
+        "pt-BR": "Tiraspol",
+        "ru": "Тирасполь",
+        "zh-CN": "蒂拉斯波尔"
+      }
+    },
+    "continent": {
+      "code": "EU",
+      "geoname_id": 6255148,
+      "names": {
+        "de": "Europa",
+        "en": "Europe",
+        "es": "Europa",
+        "fr": "Europe",
+        "ja": "ヨーロッパ",
+        "pt-BR": "Europa",
+        "ru": "Европа",
+        "zh-CN": "欧洲"
+      }
+    },
+    "country": {
+      "geoname_id": 617790,
+      "iso_code": "MD",
+      "names": {
+        "de": "Moldau (Republik Moldau)",
+        "en": "Republic of Moldova",
+        "es": "Moldavia",
+        "fr": "Moldavie",
+        "ja": "モルドバ共和国",
+        "pt-BR": "Moldova, República de",
+        "ru": "Молдова",
+        "zh-CN": "摩尔多瓦共和国"
+      }
+    },
+    "location": {
+      "accuracy_radius": 50,
+      "latitude": 46.8403,
+      "longitude": 29.6433,
+      "time_zone": "Europe/Chisinau"
+    },
+    "postal": {
+      "code": "MD-3300"
+    },
+    "registered_country": {
+      "geoname_id": 617790,
+      "iso_code": "MD",
+      "names": {
+        "de": "Moldau (Republik Moldau)",
+        "en": "Republic of Moldova",
+        "es": "Moldavia",
+        "fr": "Moldavie",
+        "ja": "モルドバ共和国",
+        "pt-BR": "Moldova, República de",
+        "ru": "Молдова",
+        "zh-CN": "摩尔多瓦共和国"
+      }
+    },
+    "subdivisions": [
+      {
+        "geoname_id": 858889,
+        "iso_code": "SN",
+        "names": {
+          "en": "Unitatea Teritoriala din Stinga Nistrului"
+        }
+      }
+    ]
+  },
+  "totalAmount": {
+    "confidenceLevel": 0.53,
+    "index": 0,
+    "data": 900,
+    "text": "Глинтвейн  900,00",
+    "regions": [
+      [
+        {
+          "x": 52,
+          "y": 14
+        },
+        {
+          "x": 278,
+          "y": 13
+        },
+        {
+          "x": 278,
+          "y": 64
+        },
+        {
+          "x": 52,
+          "y": 65
+        }
+      ],
+      [
+        {
+          "x": 1069,
+          "y": 8
+        },
+        {
+          "x": 1131,
+          "y": 8
+        },
+        {
+          "x": 1202,
+          "y": 62
+        },
+        {
+          "x": 1162,
+          "y": 62
+        }
+      ]
+    ]
+  },
+  "taxAmount": {
+    "confidenceLevel": 0
+  },
+  "confidenceLevel": 0.265,
+  "date": {
+    "confidenceLevel": 0
+  },
+  "text": {
+    "text": "Глинтвейн\nКинта Ду КаРД9 150\nСалат Цезарь\nТЕМ\n900,00\n450,00\n390,00\nа\nв\nваш\nна\nИТОГО К ОПЛАТЕ:\n1 740,00\n",
+    "regions": [
+      {
+        "x": 52,
+        "y": 8
+      },
+      {
+        "x": 1205,
+        "y": 8
+      },
+      {
+        "x": 1205,
+        "y": 237
+      },
+      {
+        "x": 52,
+        "y": 237
+      }
+    ]
+  },
+  "amounts": [
+    {
+      "data": 900,
+      "index": 0,
+      "regions": [
+        [
+          {
+            "x": 52,
+            "y": 14
+          },
+          {
+            "x": 278,
+            "y": 13
+          },
+          {
+            "x": 278,
+            "y": 64
+          },
+          {
+            "x": 52,
+            "y": 65
+          }
+        ],
+        [
+          {
+            "x": 1069,
+            "y": 8
+          },
+          {
+            "x": 1131,
+            "y": 8
+          },
+          {
+            "x": 1202,
+            "y": 62
+          },
+          {
+            "x": 1162,
+            "y": 62
+          }
+        ]
+      ],
+      "text": "Глинтвейн  900,00"
+    },
+    {
+      "data": 450,
+      "index": 1,
+      "regions": [
+        [
+          {
+            "x": 62,
+            "y": 57
+          },
+          {
+            "x": 175,
+            "y": 57
+          },
+          {
+            "x": 494,
+            "y": 106
+          },
+          {
+            "x": 430,
+            "y": 106
+          }
+        ],
+        [
+          {
+            "x": 1068,
+            "y": 55
+          },
+          {
+            "x": 1133,
+            "y": 55
+          },
+          {
+            "x": 1205,
+            "y": 105
+          },
+          {
+            "x": 1158,
+            "y": 105
+          }
+        ]
+      ],
+      "text": "Кинта Ду КаРД9 150  450,00"
+    },
+    {
+      "data": 390,
+      "index": 2,
+      "regions": [
+        [
+          {
+            "x": 1071,
+            "y": 99
+          },
+          {
+            "x": 1133,
+            "y": 99
+          },
+          {
+            "x": 1205,
+            "y": 147
+          },
+          {
+            "x": 1162,
+            "y": 147
+          }
+        ]
+      ],
+      "text": "390,00"
+    },
+    {
+      "data": 740,
+      "index": 5,
+      "regions": [
+        [
+          {
+            "x": 57,
+            "y": 189
+          },
+          {
+            "x": 174,
+            "y": 189
+          },
+          {
+            "x": 396,
+            "y": 236
+          },
+          {
+            "x": 260,
+            "y": 237
+          }
+        ],
+        [
+          {
+            "x": 1022,
+            "y": 185
+          },
+          {
+            "x": 1035,
+            "y": 185
+          },
+          {
+            "x": 1203,
+            "y": 233
+          },
+          {
+            "x": 1168,
+            "y": 233
+          }
+        ]
+      ],
+      "text": "ИТОГО К ОПЛАТЕ   1 740,00"
+    }
+  ],
+  "numbers": [
+    {
+      "data": 150,
+      "text": "Кинта Ду КаРД9 150  450,00",
+      "regions": [
+        [
+          {
+            "x": 62,
+            "y": 57
+          },
+          {
+            "x": 175,
+            "y": 57
+          },
+          {
+            "x": 494,
+            "y": 106
+          },
+          {
+            "x": 430,
+            "y": 106
+          }
+        ],
+        [
+          {
+            "x": 1068,
+            "y": 55
+          },
+          {
+            "x": 1133,
+            "y": 55
+          },
+          {
+            "x": 1205,
+            "y": 105
+          },
+          {
+            "x": 1158,
+            "y": 105
+          }
+        ]
+      ],
+      "index": 1
+    },
+    {
+      "data": 1,
+      "text": "ИТОГО К ОПЛАТЕ   1 740,00",
+      "regions": [
+        [
+          {
+            "x": 57,
+            "y": 189
+          },
+          {
+            "x": 174,
+            "y": 189
+          },
+          {
+            "x": 396,
+            "y": 236
+          },
+          {
+            "x": 260,
+            "y": 237
+          }
+        ],
+        [
+          {
+            "x": 1022,
+            "y": 185
+          },
+          {
+            "x": 1035,
+            "y": 185
+          },
+          {
+            "x": 1203,
+            "y": 233
+          },
+          {
+            "x": 1168,
+            "y": 233
+          }
+        ]
+      ],
+      "index": 5
+    }
+  ],
+  "lineAmounts": [],
+  "itemsCount": {
+    "data": 0,
+    "confidenceLevel": 0
+  },
+  "entities": {
+    "invoiceNumber": {
+      "data": "390,00",
+      "text": "390,00",
+      "confidenceLevel": 0.51,
+      "keyword": "390,00"
+    }
+  },
+  "merchantName": {
+    "confidenceLevel": 0
+  },
+  "merchantAddress": {
+    "confidenceLevel": 0
+  },
+  "merchantCity": {
+    "confidenceLevel": 0
+  },
+  "merchantState": {
+    "confidenceLevel": 0
+  },
+  "merchantCountryCode": {
+    "confidenceLevel": 0
+  },
+  "merchantTypes": {
+    "confidenceLevel": 0
+  },
+  "elapsed": 1337.2529159933329
+}

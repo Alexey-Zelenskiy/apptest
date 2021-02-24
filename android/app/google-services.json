@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "818214922231",
+    "firebase_url": "https://splitcheck-2bf0b.firebaseio.com",
+    "project_id": "splitcheck-2bf0b",
+    "storage_bucket": "splitcheck-2bf0b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:818214922231:android:08a4641a3ba43109c9f0f2",
+        "android_client_info": {
+          "package_name": "com.splitcheck"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "818214922231-3pf5184a8ctukrt1q0n8tbibb6l3hkir.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.splitcheck",
+            "certificate_hash": "5396ecf0e524bc70725b94989cc7dd6241453d8f"
+          }
+        },
+        {
+          "client_id": "818214922231-246kaafs68j3vt0nmdnpcrrk9321hk15.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPpcgcUgk4J9kcxskf-0vPk1S2FpsSOus"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "818214922231-246kaafs68j3vt0nmdnpcrrk9321hk15.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "818214922231-hkbp0s8nuea8f5sabg8q8tjf1p6f3gi9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "oleg.gamega.SplitCheck"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

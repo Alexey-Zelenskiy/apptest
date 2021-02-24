@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>818214922231-hkbp0s8nuea8f5sabg8q8tjf1p6f3gi9.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.818214922231-hkbp0s8nuea8f5sabg8q8tjf1p6f3gi9</string>
+	<key>API_KEY</key>
+	<string>AIzaSyC-fq-hPf43zRQ48b3AmMhUD4kgh6BrHJg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>818214922231</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>oleg.gamega.SplitCheck</string>
+	<key>PROJECT_ID</key>
+	<string>splitcheck-2bf0b</string>
+	<key>STORAGE_BUCKET</key>
+	<string>splitcheck-2bf0b.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:818214922231:ios:02f60088fc4b03f1c9f0f2</string>
+	<key>DATABASE_URL</key>
+	<string>https://splitcheck-2bf0b.firebaseio.com</string>
+</dict>
+</plist>
