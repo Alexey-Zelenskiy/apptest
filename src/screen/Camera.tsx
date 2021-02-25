@@ -255,7 +255,7 @@ const Camera = () => {
 		stopProcessing();
 		const base64 = await readFile(newFile.uri, "base64");
 		setPreviewUri(uri);
-		setImageSize({width: width, height: height});
+		setImageSize({width: width, height: height + 300});
 		setShowCropper(true);
 		storePhoto(`data:image/${ext};base64,${base64}`);
 		buttonDisable.current = false;
@@ -285,12 +285,12 @@ const Camera = () => {
 		try {
 			ImagePicker.launchImageLibrary({}, async (response) => {
 				if (response.didCancel) return;
-				const newFile = await ImageResizer.createResizedImage(response.uri, 1000, 1000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
+				const newFile = await ImageResizer.createResizedImage(response.uri, 5000, 5000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
 				const base64 = await readFile(newFile.uri, "base64");
 				const ext = newFile.name?.split('.')?.pop()?.toLowerCase() || "jpg";
 				storePhoto(`data:image/${ext};base64,${base64}`);
 				setPreviewUri(response.uri);
-				setImageSize({width: response.width, height: response.height});
+				setImageSize({width: response.width, height: response.height + 350});
 				setShowCropper(true);
 			});
 		} catch (error) {
@@ -318,7 +318,7 @@ const Camera = () => {
 							footerComponent={<CropBottomPanel/>}
 							imageUri={previewUri}
 							imageWidth={imageSize?.width}
-							imageHeight={imageSize?.height}
+							imageHeight={imageSize?.height + 300}
 							NOT_SELECTED_AREA_OPACITY={0.3}
 							BORDER_WIDTH={20}
 						/>
