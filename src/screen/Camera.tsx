@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {
 	StyleSheet,
 	View,
@@ -88,7 +88,7 @@ const Camera = () => {
 			} else {
 				Alert.alert(
 					'Denied',
-					'The application needs access to your camera.',
+					'The application needs access to use your camera.',
 					[
 						{
 							text: 'OK',
@@ -158,71 +158,8 @@ const Camera = () => {
 		navigation.setParams({toggleFlashHandler: toggleFlashMode, flashMode})
 	}, [flashMode]);
 
-	// const requestLocationPermission = async () => {
-	// 	try {
-	// 		const granted = await PermissionsAndroid.request(
-	// 			PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-	// 		);
-	// 		if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-	// 			await Geolocation.getCurrentPosition(
-	// 				position => {
-	// 					const formData = new FormData();
-	// 					formData.append(
-	// 						'data',
-	// 						`{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"positions\" : [],  \"coords\" : "${
-	// 							position.coords
-	// 						}"}`,
-	// 					);
-	// 					loadData(formData);
-	// 				},
-	// 				error => {
-	// 					// See error code charts below.
-	// 					console.log(error.code, error.message);
-	// 				},
-	// 				{enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-	// 			);
-	// 			await PermissionsAndroid.request(
-	// 				PermissionsAndroid.PERMISSIONS.CAMERA,
-	// 			);
-	// 		} else {
-	// 			Alert.alert(
-	// 				'Denied',
-	// 				'The application needs access to your location.',
-	// 				[
-	// 					{
-	// 						text: 'OK',
-	// 						onPress: async () => {
-	// 							await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
-	// 								.then(result => {
-	// 									console.log(
-	// 										'PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION',
-	// 										result,
-	// 									);
-	// 								})
-	// 								.catch(error => {
-	// 									console.log(error);
-	// 								});
-	// 						},
-	// 					},
-	// 				],
-	// 				{cancelable: false},
-	// 			);
-	// 		}
-	// 	} catch (err) {
-	// 		console.warn(err);
-	// 	}
-	// };
-	//
-	// useEffect(() => {
-	// 	if(Platform.OS === 'android'){
-	// 		requestLocationPermission().then();
-	// 	}
-	// }, []);
-
 
 	const [externalStorage, setExternalStorage] = useState<any>(undefined)
-
-	const [onPressGallery, setOnPressGallery] = useState<boolean>(false)
 
 	const setToken = (token: any) => dispatch(setFcm(token));
 
@@ -258,22 +195,38 @@ const Camera = () => {
 		requestUserPermission().then();
 	}, []);
 
-	const requestStoragePermission = async () => {
-		const granted = Platform.OS === 'android' 
-		? await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then()
-		: await check(PERMISSIONS.IOS.PHOTO_LIBRARY).then();
-		if(granted == 'granted'){
-			setExternalStorage(true);
-		} else if(onPressGallery && granted === 'denied'){
-			setExternalStorage(false);
-		}
-	};
+	const checkStorage = useCallback (async () => {
+		const granted = Platform.OS === 'android'
+			? await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then()
+			: await check(PERMISSIONS.IOS.PHOTO_LIBRARY).then();
+		console.log(granted, 'gran')
+		setExternalStorage(granted)
+	},[])
+
+	const requestStoragePermission = useCallback (async () => {
+		Platform.OS === 'android' ?
+			request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
+				.then(result => {
+					console.log('PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE', result);
+					setExternalStorage(result)
+				})
+				.catch(error => {
+					console.log(error);
+				}) : request(PERMISSIONS.IOS.PHOTO_LIBRARY)
+				.then(result => {
+					console.log('PERMISSIONS.IOS.PHOTO_LIBRARY', result);
+					setExternalStorage(result)
+				})
+				.catch(error => {
+					console.log(error);
+				})
+	},[])
 
 	useEffect(() => {
-		if(!externalStorage || externalStorage === undefined){
-			requestStoragePermission().then()
+		if(externalStorage){
+			checkStorage().then();
 		}
-	}, [externalStorage]);
+	}, [externalStorage, checkStorage]);
 
 	const camera = useRef<RNCamera | null>(null);
 
@@ -286,7 +239,6 @@ const Camera = () => {
 			forceUpOrientation: true
 		};
 		const {uri, width, height} = await camera.current.takePictureAsync(options);
-
 		const newFile = await ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
 		const ext = newFile.name?.split('.')?.pop()?.toLowerCase() || "jpg";
 		const save = await AsyncStorage.getItem(Keys.saveLocal);
@@ -329,28 +281,10 @@ const Camera = () => {
 		}
 	};
 
-	const choiceFileFormGallery = async () => {
-		setOnPressGallery(true);
-		Platform.OS === 'android' ?
-		request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
-			.then(result => {
-				console.log('PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE', result);
-			})
-			.catch(error => {
-				console.log(error);
-			}) : request(PERMISSIONS.IOS.PHOTO_LIBRARY)
-			.then(result => {
-				console.log('PERMISSIONS.IOS.PHOTO_LIBRARY', result);
-			})
-			.catch(error => {
-				console.log(error);
-			})
-			if(!externalStorage || externalStorage === undefined){
-				await requestStoragePermission();
-			}
-		if(externalStorage){
+	const choiceFileFormGallery = () => {
+		try {
 			ImagePicker.launchImageLibrary({}, async (response) => {
-				if (response.didCancel || response.error) return;
+				if (response.didCancel) return;
 				const newFile = await ImageResizer.createResizedImage(response.uri, 1000, 1000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
 				const base64 = await readFile(newFile.uri, "base64");
 				const ext = newFile.name?.split('.')?.pop()?.toLowerCase() || "jpg";
@@ -359,15 +293,17 @@ const Camera = () => {
 				setImageSize({width: response.width, height: response.height});
 				setShowCropper(true);
 			});
+		} catch (error) {
+			Alert.alert("Error", error.message);
 		}
-	}
+	};
 
 	const acceptImage = async (uri: string) => {
 		setPhotoUri(uri);
 		const newFile = await ImageResizer.createResizedImage(uri, 5000, 5000, 'JPEG', Platform.OS === "ios" ? 0.7 : 70);
 		setShowCropper(false);
 		sendPhoto(newFile.uri);
-		saveGeo();
+		await saveGeo();
 	};
 
 	const renderCropModal = () => {
@@ -479,7 +415,7 @@ const Camera = () => {
 				captureAudio={false}
 				androidCameraPermissionOptions={{
 					title: 'Permission to use Camera',
-					message: 'We need your permission to user your camera',
+					message: 'We need your permission to use your camera',
 					buttonPositive: 'Ok',
 					buttonNegative: 'Cancel',
 				}}
@@ -498,11 +434,17 @@ const Camera = () => {
 							{loading}
 						</TouchableOpacity>
 					</View>
-					{externalStorage!==false && <View style={{flex: 1, justifyContent: "center", alignItems: 'center'}}>
-						<TouchableOpacity onPress={choiceFileFormGallery}>
+					 <View style={{flex: 1, justifyContent: "center", alignItems: 'center'}}>
+						<TouchableOpacity onPress={ async () => {
+							await requestStoragePermission();
+							await checkStorage();
+							if(externalStorage === 'granted'){
+								choiceFileFormGallery();
+							}
+						}}>
 							<Image source={galleryIcon}/>
 						</TouchableOpacity>
-					</View>}
+					</View>
 				</View>
 			</RNCamera>
 		)
