@@ -238,6 +238,7 @@ const Camera = () => {
 			skipProcessing: true,
 			forceUpOrientation: true
 		};
+		const test = await camera.current.takePictureAsync(options);
 		const {uri, width, height} = await camera.current.takePictureAsync(options);
 		const newFile = await ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
 		const ext = newFile.name?.split('.')?.pop()?.toLowerCase() || "jpg";
@@ -255,7 +256,7 @@ const Camera = () => {
 		stopProcessing();
 		const base64 = await readFile(newFile.uri, "base64");
 		setPreviewUri(uri);
-		setImageSize({width: width, height: height + 300});
+		setImageSize({width: width, height: height});
 		setShowCropper(true);
 		storePhoto(`data:image/${ext};base64,${base64}`);
 		buttonDisable.current = false;
@@ -268,7 +269,9 @@ const Camera = () => {
 					console.log("position", position);
 					storeGeo(position.coords);
 					const formData = new FormData();
-					formData.append("data", `{\"uid\":"${getUniqueId()}" , \"fcm\" :"", \"positions\" : [],  \"coords\" : "${position.coords}"}`);
+					formData.append("data", `{\"uid\":"${getUniqueId()}" , \"fcm\" :"", \"positions\" : [],  \"coords\" : "lat: ${
+						position.coords.latitude
+					}, long:${position.coords.longitude}"}`);
 					loadData(formData);
 				},
 				(error) => {
@@ -290,7 +293,7 @@ const Camera = () => {
 				const ext = newFile.name?.split('.')?.pop()?.toLowerCase() || "jpg";
 				storePhoto(`data:image/${ext};base64,${base64}`);
 				setPreviewUri(response.uri);
-				setImageSize({width: response.width, height: response.height + 350});
+				setImageSize({width: response.width, height: response.height});
 				setShowCropper(true);
 			});
 		} catch (error) {
@@ -309,7 +312,7 @@ const Camera = () => {
 	const renderCropModal = () => {
 		if (imageSize === null) return;
 		return (
-			<Modal visible={showCropper} animationType="slide" presentationStyle="fullScreen">
+			<Modal visible={showCropper} animationType="slide" presentationStyle="overFullScreen">
 				<View style={{flex: 1, backgroundColor: "black"}}>
 					<SafeAreaView style={{flex: 1}}>
 						<AmazingCropper
@@ -318,7 +321,7 @@ const Camera = () => {
 							footerComponent={<CropBottomPanel/>}
 							imageUri={previewUri}
 							imageWidth={imageSize?.width}
-							imageHeight={imageSize?.height + 300}
+							imageHeight={imageSize?.height * 2}
 							NOT_SELECTED_AREA_OPACITY={0.3}
 							BORDER_WIDTH={20}
 						/>

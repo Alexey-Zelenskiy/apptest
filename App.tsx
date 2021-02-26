@@ -91,7 +91,7 @@ const App = () => {
   const [permission, setPermission] = useState<boolean>(false);
   const initLocalStorage = async () => {
     if (!(await AsyncStorage.getItem(Keys.saveLocal))) {
-      await AsyncStorage.setItem(Keys.saveLocal, 'true');
+      await AsyncStorage.setItem(Keys.saveLocal, 'false');
     }
     if (!(await AsyncStorage.getItem(Keys.allowNotification))) {
       await AsyncStorage.setItem(Keys.allowNotification, 'true');
@@ -138,9 +138,9 @@ const App = () => {
             const formData = new FormData();
             formData.append(
               'data',
-              `{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"positions\" : [],  \"coords\" : "${
-                position.coords
-              }"}`,
+              `{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"positions\" : [],  \"coords\" : "lat: ${
+                position.coords.latitude
+              }, long:${position.coords.longitude}"}`,
             );
             loadData(formData);
           },
