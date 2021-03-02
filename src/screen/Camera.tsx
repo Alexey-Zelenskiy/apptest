@@ -18,7 +18,8 @@ import {
 	setCameraProcessingAction,
 	setFcm,
 	storeOriginPhotoAction,
-	storePhotoAction
+	storePhotoAction,
+	setGeo,
 } from "../actions/camera";
 import {RootState} from "../reducers";
 import {ActivityIndicator, Dialog} from "react-native-paper";
@@ -45,6 +46,8 @@ import {PERMISSIONS, request, check} from "react-native-permissions";
 import {getUniqueId} from "react-native-device-info";
 import {loadData} from "../api";
 import messaging from "@react-native-firebase/messaging";
+import axios from 'axios';
+import { setOrder } from '../actions/check';
 
 
 interface ImageSize {
@@ -70,65 +73,20 @@ const Camera = () => {
 	const sendPhoto = (uri: string) => dispatch(sendPhotoAction(uri));
 	const storePhoto = (base64: string) => dispatch(storePhotoAction(base64));
 	const storeGeo = (data: Object) => dispatch(storeGeoAction(data));
-
+	const users = useSelector((state: RootState) => state.check.users);
 	const {formatMessage: f} = useTranslation();
-
+	const items = useSelector((state: RootState) => state.check.items);
+	const orderIdSet = (order_id: any) =>
+	dispatch(setOrder(order_id));
+  const usersItemsList = useSelector(
+    (state: RootState) => state.check.usersItemsList,
+  );
 	const isProcessing = useSelector((state: RootState) => state.camera.isProcessing);
 	const isUploading = useSelector((state: RootState) => state.camera.isUploading);
 
 	const [permission, setPermission] = useState<boolean>(false);
+	const [requestLoad, setRequest] = useState<boolean>(false);
 
-	const requestLocationPermission = async () => {
-		try {
-			const granted = Platform.OS === 'android' ? await PermissionsAndroid.request(
-				PermissionsAndroid.PERMISSIONS.CAMERA) : await request(
-				PERMISSIONS.IOS.CAMERA)
-			if (granted === 'granted' || granted === PermissionsAndroid.RESULTS.GRANTED) {
-				setPermission(true);
-			} else {
-				Alert.alert(
-					'Denied',
-					'The application needs access to use your camera.',
-					[
-						{
-							text: 'OK',
-							onPress: () => {
-								Platform.OS === 'android'  ?
-								 request(PERMISSIONS.ANDROID.CAMERA)
-									.then(result => {
-										setPermission(true);
-										console.log(
-											'PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION',
-											result,
-										);
-									})
-									.catch(error => {
-										console.log(error);
-									}) :  request(PERMISSIONS.IOS.CAMERA)
-										.then(result => {
-											setPermission(true);
-											console.log(
-												'PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION',
-												result,
-											);
-										})
-										.catch(error => {
-											console.log(error);
-										});
-							},
-						},
-					],
-					{cancelable: false},
-				);
-			}
-		} catch (err) {
-			console.warn(err);
-		}
-	};
-
-	useEffect(() => {
-				requestLocationPermission().then();
-	}, []);
 
 	useEffect(() => {
 		if (!isUploading) {
@@ -139,8 +97,10 @@ const Camera = () => {
 	useEffect(() => {
 		if (!isUploading) {
 			setStep(step + 1);
-		} else setStep(step + 1);
-	}, [isUploading]);
+		} else if(isUploading && requestLoad) {
+			setStep(step + 1)
+		}
+	}, [isUploading, requestLoad]);
 
 	useEffect(() => {
 		if (step === 3) {
@@ -159,41 +119,78 @@ const Camera = () => {
 	}, [flashMode]);
 
 
+	useEffect(()=>{
+		if(items.size && !requestLoad){
+			const formData = new FormData();
+			const data = 	`{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"amount\":"${items.reduce((a, b) => a + b.price, 0)}" , \"coords\" : ${JSON.stringify(`${geoloc?.lat}, ${geoloc?.lon}`)}, \"positions\" : ${JSON.stringify(items.map((check) => JSON.stringify({name: check.text, amount: check.price, count: check.count, friends: `${JSON.stringify(users?.map((item, index) => {
+				const exists = usersItemsList.find(
+					el => el.userUid === item.uid && el.itemUid === check.uid,
+				);
+				if(exists){
+					return index
+				} else {
+					return null;
+				}
+			}))}`, like: check.like || 0}).replace(/\[|\]/g, ''))).replace(/\\/g, '')}}`
+			formData.append(
+				'data',
+				data
+			);
+			axios
+			.post('http://biller2.teo-crm.com/api/user/load', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+					'Access-Control-Allow-Origin': '*',
+				},
+			}).then(res => {
+				orderIdSet(res.data?.order_id)
+			});
+			setRequest(true);
+		}
+	},[items, users, usersItemsList, requestLoad])
+
 	const [externalStorage, setExternalStorage] = useState<any>(undefined)
 
 	const setToken = (token: any) => dispatch(setFcm(token));
-
+	const setGeoloc = (geo: any) => dispatch(setGeo(geo));
 	const [fcm, setFcmToken] = useState<any>(undefined);
+	const [geoloc, setGeolocat] = useState<any>(undefined);
 
 	const getFcmToken = async () => {
-		const fcmToken = await messaging().getToken();
-		if (fcmToken) {
-			console.log(fcmToken)
-			setToken(fcmToken);
-			setFcmToken(fcmToken);
-			const formData = new FormData();
-			formData.append(
-				'data',
-				`{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcmToken}", \"positions\" : []}`,
-			);
-			await loadData(formData);
-		}
-	};
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      setFcmToken(fcmToken);
+    }
+  };
 
-	const requestUserPermission = async () => {
-		const authStatus = await messaging().requestPermission();
-		const enabled =
-			authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-			authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-		if (enabled) {
-			await getFcmToken();
-			console.log('Authorization status:', authStatus);
-		}
-	};
+  const requestUserPermission = async () => {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    if (enabled) {
+      await getFcmToken();
+      console.log('Authorization status:', authStatus);
+    }
+  };
 
-	useEffect(() => {
+  const requestLocationsPermission = async () => {
+		await Geolocation.getCurrentPosition(
+			async position => {
+				setGeolocat({lat: position.coords.latitude, lon: position.coords.longitude})
+			},
+			error => {
+				// See error code charts below.
+				console.log(error.code, error.message);
+			},
+			{enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+		);
+  };
+
+  useEffect(()=>{
 		requestUserPermission().then();
-	}, []);
+		requestLocationsPermission().then();
+	},[])
 
 	const checkStorage = useCallback (async () => {
 		const granted = Platform.OS === 'android'
@@ -238,7 +235,7 @@ const Camera = () => {
 			skipProcessing: true,
 			forceUpOrientation: true
 		};
-		const test = await camera.current.takePictureAsync(options);
+	
 		const {uri, width, height} = await camera.current.takePictureAsync(options);
 		const newFile = await ImageResizer.createResizedImage(uri, 1000, 1000, 'JPEG', Platform.OS === "ios" ? 0.5 : 50);
 		const ext = newFile.name?.split('.')?.pop()?.toLowerCase() || "jpg";
@@ -268,11 +265,9 @@ const Camera = () => {
 				(position) => {
 					console.log("position", position);
 					storeGeo(position.coords);
-					const formData = new FormData();
-					formData.append("data", `{\"uid\":"${getUniqueId()}" , \"fcm\" :"", \"positions\" : [],  \"coords\" : "lat: ${
+					setGeoloc(`lat: ${
 						position.coords.latitude
-					}, long:${position.coords.longitude}"}`);
-					loadData(formData);
+					}, long:${position.coords.longitude}`);
 				},
 				(error) => {
 					console.log(error.code, error.message);
@@ -307,7 +302,8 @@ const Camera = () => {
 		setShowCropper(false);
 		sendPhoto(newFile.uri);
 		await saveGeo();
-	};
+	}
+
 
 	const renderCropModal = () => {
 		if (imageSize === null) return;

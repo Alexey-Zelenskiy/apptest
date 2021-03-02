@@ -8,7 +8,7 @@ import {
 	View, Share,
 	LayoutChangeEvent, Platform, Alert, AsyncStorage,
 } from 'react-native';
-
+import messaging from '@react-native-firebase/messaging';
 import {
 	acceptIcon,
 	addUserIcon,
@@ -20,10 +20,11 @@ import {
 	shareIcon,
 	trashIcon
 } from "../constants/images";
+import Geolocation from 'react-native-geolocation-service';
 import { v4 } from "react-native-uuid";
 import { Item } from "../types/interfaces";
 import { Routes } from "../navigation/routes";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from 'react-navigation-hooks';
 import { RootState } from "../reducers";
 import CheckItem from "../components/checkItem/CheckItem";
@@ -38,6 +39,12 @@ import useTranslation from "../hooks/useTranslation";
 import moment from "moment";
 import { AppState, Text } from 'react-native';
 import { Keys } from "../constants/keys";
+import { CameraState } from '../reducers/camera';
+import { getUniqueId } from 'react-native-device-info';
+import { loadData } from '../api';
+import { useCallback } from 'react';
+import axios from 'axios';
+import { setOrder } from '../actions/check';
 
 const {width} = Dimensions.get('window');
 
@@ -50,27 +57,37 @@ const Check = ({data}: Props) => {
 	const navigation = useNavigation();
 	const {addUser, deleteItem, deleteLastUser, storeUsers, storeAPNSToken, newCheck, checkLastTime} = useActions();
 	const {formatMessage: f} = useTranslation();
-
+  const likeDislike = useSelector(
+    (state: RootState) => state.check.likeDislike,
+  );
+	const dispatch = useDispatch();
 	const [scrollHeight, setScrollHeight] = useState(0);
 	const [checkPanelDown, setCheckPanelDown] = useState<string | never>();
-
+	const hist = useSelector((state: RootState) => state.check.history);
 	const users = useSelector((state: RootState) => state.check.users);
+	const fcmToken = useSelector((state: CameraState) => state.fcm);
+	const geo = useSelector((state: CameraState) => state.geo);
+	const priceAmount = useSelector((state: CameraState) => state.price);
 	const items = useSelector((state: RootState) => state.check.items);
 	const splitByUser = useSelector((state: RootState) => state.check.splitByUser);
 	const panelHeight = useSelector((state: RootState) => state.check.panelHeight);
 	const openCamera = useSelector((state: RootState) => state.camera.openCamera);
-
+	const dataCheck = useSelector((state: RootState) => state.check.history);
 	const history = navigation.getParam("history");
-
 	const checkLastCheckTime = async () => {
 		checkLastTime();
 	};
-
+	const usersItemsList = useSelector(
+    (state: RootState) => state.check.usersItemsList,
+  );
 	const stateChanged = async (nextAppState: string) => {
 		if (nextAppState === "active") {
 			await checkLastCheckTime();
 		}
 	};
+
+	 const [cheks, setCheks] = useState<any>();
+
 
 	useEffect(() => {
 		AppState.addEventListener('change', stateChanged);
@@ -115,6 +132,63 @@ const Check = ({data}: Props) => {
 		setCheckPanelDown(v4());
 	};
 
+
+	const [fcm, setFcmToken] = useState<any>(undefined);
+	const [geoloc, setGeoloc] = useState<any>(undefined);
+
+  const [checks, setChecks] = useState<any>();
+
+	useEffect(()=>{
+		if(items){
+			setChecks(`{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"amount\":"${items?.reduce((a, b) => a + b.price, 0)}" , \"coords\" : ${JSON.stringify(`${geoloc?.lat}, ${geoloc?.lon}`)}, \"positions\" : ${JSON.stringify(items.map((check) => JSON.stringify({name: check.text, amount: check.price, count: check.count, friends: `${JSON.stringify(users?.map((item, index) => {
+				const exists = usersItemsList.find(
+					el => el.userUid === item.uid && el.itemUid === check.uid,
+				);
+				if(exists){
+					return index
+				} else {
+					return null;
+				}
+			}))}`, like: check.like || 0}).replace(/\[|\]/g, ''))).replace(/\\/g, '')}}`);
+		}
+	},[items, users, usersItemsList])
+
+	const getFcmToken = async () => {
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
+      setFcmToken(fcmToken);
+    }
+  };
+
+  const requestUserPermission = async () => {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    if (enabled) {
+      await getFcmToken();
+      console.log('Authorization status:', authStatus);
+    }
+  };
+
+  const requestLocationPermission = async () => {
+		await Geolocation.getCurrentPosition(
+			async position => {
+				setGeoloc({lat: position.coords.latitude, lon: position.coords.longitude})
+			},
+			error => {
+				// See error code charts below.
+				console.log(error.code, error.message);
+			},
+			{enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+		);
+  };
+
+  useEffect(()=>{
+		requestUserPermission().then();
+		requestLocationPermission().then();
+	},[])
+
 	const deleteItemHandler = (itemUid: string) => {
 		if (Platform.OS === 'ios') {
 			Alert.alert(
@@ -129,10 +203,35 @@ const Check = ({data}: Props) => {
 		}
 	};
 
-	const renderRightActions = (progress: Animated.AnimatedInterpolation, dragX: Animated.AnimatedInterpolation, itemUid: string) => {
+	const renderRightActions = (progress: Animated.AnimatedInterpolation, dragX: Animated.AnimatedInterpolation, itemUid: string, orderId: any) => {
 		return (
 			<View style={styles.swipeButton}>
-				<TouchableOpacity onPress={() => deleteItem(itemUid)}
+				<TouchableOpacity onPress={() => {
+					 deleteItem(itemUid);
+					 const formData = new FormData();
+					 const data = 	`{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"amount\":"${items.reduce((a, b) => a + b.price, 0)}" , \"order_id\" : "${orderId}", \"coords\" : ${JSON.stringify(`${geoloc?.lat}, ${geoloc?.lon}`)}, \"positions\" : ${JSON.stringify(items.map((check) => JSON.stringify({name: check.text, amount: check.price, count: check.count, friends: `${JSON.stringify(users?.map((item, index) => {
+						 const exists = usersItemsList.find(
+							 el => el.userUid === item.uid && el.itemUid === check.uid,
+						 );
+						 if(exists){
+							 return index
+						 } else {
+							 return null;
+						 }
+					 }))}`, like: check.like || 0}).replace(/\[|\]/g, ''))).replace(/\\/g, '')}}`
+					 formData.append(
+						 'data',
+						 data
+					 );
+					 axios
+					 .post('http://biller2.teo-crm.com/api/user/load', formData, {
+						 headers: {
+							 'Content-Type': 'multipart/form-data',
+							 'Access-Control-Allow-Origin': '*',
+						 },
+					 }).then(res => {
+					 });
+				}}
 				                  hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}>
 					<Image style={styles.deleteIcon} source={trashIcon}/>
 				</TouchableOpacity>
@@ -145,14 +244,15 @@ const Check = ({data}: Props) => {
 			<View>
 				<View style={styles.substrate}/>
 				<Swipeable
-					renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item.uid)}
+					renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item.uid, item.orderId)}
 					containerStyle={{paddingBottom: 6, paddingTop: 3}}>
-					<CheckItem item={item}/>
+					<CheckItem item={item} geo={geoloc} history={hist} fcmToken={fcm} items={checks} users={users} usersItemsList={usersItemsList}/>
 				</Swipeable>
 			</View>
 		)
 	};
 
+	
 	const renderListHeader = () => <View style={{height: 8}}/>;
 	const renderListFooter = () => <View style={{height: panelHeight + 8}}/>;
 
@@ -237,9 +337,8 @@ const Check = ({data}: Props) => {
 				data={items.toArray()}
 				keyExtractor={item => item.uid}
 				renderItem={renderListItem}
-
 			/>
-			<CheckPanel rootHeight={scrollHeight} swipeDownSeed={checkPanelDown}/>
+				<CheckPanel rootHeight={scrollHeight} swipeDownSeed={checkPanelDown} fcmToken={fcmToken} items={items} users={users} usersItemsList={usersItemsList}/>
 		</View>
 	);
 };

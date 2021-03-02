@@ -98,34 +98,6 @@ const App = () => {
     }
   };
 
-  const getFcmToken = async () => {
-    const fcmToken = await messaging().getToken();
-    if (fcmToken) {
-      setFcmToken(fcmToken);
-      const formData = new FormData();
-      formData.append(
-        'data',
-        `{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcmToken}", \"positions\" : []}`,
-      );
-      await loadData(formData);
-    }
-  };
-
-  const requestUserPermission = async () => {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-    if (enabled) {
-      await getFcmToken();
-      console.log('Authorization status:', authStatus);
-    }
-  };
-
-  useEffect(() => {
-    requestUserPermission().then();
-  }, []);
-
   const requestLocationPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -133,23 +105,6 @@ const App = () => {
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         setPermission(true);
-        await Geolocation.getCurrentPosition(
-          position => {
-            const formData = new FormData();
-            formData.append(
-              'data',
-              `{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcm}", \"positions\" : [],  \"coords\" : "lat: ${
-                position.coords.latitude
-              }, long:${position.coords.longitude}"}`,
-            );
-            loadData(formData);
-          },
-          error => {
-            // See error code charts below.
-            console.log(error.code, error.message);
-          },
-          {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-        );
       } else {
         Alert.alert(
           'Denied',
@@ -185,6 +140,8 @@ const App = () => {
       if (!permission) {
         requestLocationPermission().then();
       }
+    } else {
+      Geolocation.requestAuthorization();
     }
   }, [permission]);
 
@@ -204,7 +161,7 @@ const App = () => {
     initLocalStorage().then();
   }, []);
 
-  if (!permission) {
+  if (!permission && Platform.OS === 'android') {
     return null;
   }
 

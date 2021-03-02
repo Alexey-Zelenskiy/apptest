@@ -51,6 +51,14 @@ export const openCameraAction = (): OpenCameraAction => {
     return {type: OPEN_CAMERA, payload: v4()}
 };
 export const SET_FCM = "SET_FCM";
-export const setFcm = (fcm: string): OpenCameraAction => {
+export const setFcm = (fcm: string): any => {
     return {type: SET_FCM, payload: fcm}
+};
+export const SET_GEO = "SET_GEO";
+export const setGeo = (geo: any): any => {
+    return {type: SET_GEO, payload: geo}
+};
+export const SET_PRICE = "SET_PRICE";
+export const setPrice = (price: any): any => {
+    return {type: SET_PRICE, payload: price}
 };

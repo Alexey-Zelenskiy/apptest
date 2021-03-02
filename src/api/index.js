@@ -106,8 +106,7 @@ export const loadData = data => {
         'Content-Type': 'multipart/form-data',
         'Access-Control-Allow-Origin': '*',
       },
-    })
-    .then(res => res);
+    });
 };
 
 // export const saveFcmToken = ()

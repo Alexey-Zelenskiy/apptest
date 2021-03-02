@@ -1,9 +1,13 @@
 import {usersColor} from "../../constants/colors";
-import React from "react";
+import React, { useEffect } from "react";
 import {StyleSheet, View, Text, Image} from "react-native";
 import {useSelector} from "react-redux";
 import {RootState} from "../../reducers";
 import {userIcon} from "../../constants/images";
+import { CameraState } from "../../reducers/camera";
+import { useCallback } from "react";
+import { getUniqueId } from "react-native-device-info";
+import { loadData } from "../../api";
 
 interface Props {
     userUid: string;
@@ -13,9 +17,13 @@ interface Props {
 const CirclePrice = ({userUid, price}: Props) => {
 
     const users = useSelector((state: RootState) => state.check.users);
-
+	const fcmToken = useSelector((state: CameraState) => state.fcm);
+	const geo = useSelector((state: CameraState) => state.geo);
+    const items = useSelector((state: RootState) => state.check.items);
     const content = price ? <Text style={styles.priceText}>{price}</Text> : <Image source={userIcon}/>;
     const user = users.find(user => user.uid === userUid);
+    const history = useSelector((state: RootState) => state.check.history);
+
 
     if (!user) return null;
     const widthStyle: { width?: number } = {};

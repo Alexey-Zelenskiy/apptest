@@ -7,20 +7,26 @@ import {
   SET_FCM,
   SetCameraProcessingAction,
   SetCameraUploadingAction,
+  SET_GEO,
+  SET_PRICE,
 } from '../actions/camera';
 
 export interface CameraState {
   isProcessing: boolean;
   isUploading: boolean;
   openCamera: string;
-  fcm: string;
+  fcm: any;
+  geo: any;
+  price: any;
 }
 
 const init: CameraState = {
   isProcessing: false,
   isUploading: false,
   openCamera: '',
-  fcm: '',
+  fcm: undefined,
+  geo: undefined,
+  price: 0,
 };
 
 export default (state: CameraState = init, action: ActionWithPayload<any>) => {
@@ -35,6 +41,16 @@ export default (state: CameraState = init, action: ActionWithPayload<any>) => {
         ...state,
         fcm: action.payload,
       };
+      case SET_GEO:
+        return {
+          ...state,
+          geo: action.payload,
+        };
+        case SET_PRICE:
+          return {
+            ...state,
+            price: action.payload,
+          };
     case SET_CAMERA_UPLOADING:
       return {
         ...state,

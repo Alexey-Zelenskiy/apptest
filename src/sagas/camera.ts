@@ -48,11 +48,11 @@ function* sendPhoto(action: SendPhotoAction) {
 		}
 		yield put(setItemsAction(items));
 		yield put(storeCheckAction());
-
+		if(items.length > 0){
+			yield delay(500)
+			yield put(setCameraUploadingAction(false));
+		}
 	} catch (e) {
-		setTimeout(() => {
-			Alert.alert("Error", e.message)
-		}, 1000);
 	} finally {
 		yield delay(500)
 		yield put(setCameraUploadingAction(false));

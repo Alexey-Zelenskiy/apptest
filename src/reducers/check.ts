@@ -25,7 +25,9 @@ import {
     SPLIT_ITEM,
     SplitItemAction,
     TOGGLE_FAVORITE,
-    ToggleFavoriteAction
+    ToggleFavoriteAction,
+    SetOrderId,
+    SET_ORDER_ID
 } from "../actions/check";
 import {NEW_CHECK} from "../actions/storage";
 
@@ -153,13 +155,43 @@ const clearCheck = (state: CheckState): CheckState => {
 
 const setLikeDislike = (state: CheckState, action: SetLikeDislikeAction): CheckState => {
     const {uid, status} = action.payload;
-    let {likeDislike} = state;
+    let {likeDislike, items} = state;
     if (likeDislike.has(uid) && likeDislike.get(uid)! === action.payload.status) {
         likeDislike = likeDislike.delete(uid);
     } else {
         likeDislike = state.likeDislike.set(uid, status);
     }
-    return {...state, likeDislike};
+    items = items.map(item => {
+        if(item.uid === uid){
+            return {
+                ...item,
+                like: 1
+            }
+        } else {
+            return {
+                ...item,
+            }
+        }
+    })
+    return {...state, likeDislike, items};
+};
+
+const setOrder = (state: CheckState, action: SetOrderId): CheckState => {
+    const {order_id} = action.payload;
+    let {items} = state;
+    items = items.map(item => {
+        if(item?.orderId === order_id){
+            return {
+                ...item,
+            }
+        } else {
+            return {
+                ...item,
+                orderId: order_id
+            }
+        }
+    })
+    return {...state, items};
 };
 
 const setPrice = (state: CheckState, action: SetPriceActions): CheckState => {
@@ -220,6 +252,8 @@ export default (state: CheckState = init, action: ActionWithPayload<any>): Check
             return clearCheck(state);
         case SET_LIKE_DISLIKE:
             return setLikeDislike(state, (action as SetLikeDislikeAction));
+            case SET_ORDER_ID:
+            return setOrder(state, (action as SetOrderId));
         case SET_PRICE:
             return setPrice(state, (action as SetPriceActions));
         case DELETE_USER:

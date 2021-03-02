@@ -32,14 +32,31 @@ import prompt from 'react-native-prompt-android';
 import {CameraState} from '../../reducers/camera';
 import {getUniqueId} from 'react-native-device-info';
 import {loadData} from '../../api';
+import axios from 'axios';
 
 interface Props {
   item: Item;
   simple?: boolean;
   disable?: boolean;
+  geo: any;
+  history: any;
+  fcmToken: any;
+  items: any;
+  users: any;
+  usersItemsList: any;
 }
 
-export const CheckItem = ({item, simple, disable = false}: Props) => {
+export const CheckItem = ({
+  item,
+  simple,
+  disable = false,
+  geo,
+  history,
+  fcmToken,
+  users,
+  usersItemsList,
+  items,
+}: Props) => {
   const dispatch = useDispatch();
   const splitItem = (itemUid: string) => dispatch(splitItemAction(itemUid));
   const storeLikes = () => dispatch(storeLikesAction());
@@ -48,24 +65,22 @@ export const CheckItem = ({item, simple, disable = false}: Props) => {
   const setPrice = (itemUid: string, price: number) =>
     dispatch(setPriceAction(itemUid, price));
   const storeItems = () => dispatch(storeItemsAction());
-
-  const fcmToken = useSelector((state: CameraState) => state.fcm);
-
   const {formatMessage: f} = useTranslation();
-
-  const users = useSelector((state: RootState) => state.check.users);
   const likeDislike = useSelector(
     (state: RootState) => state.check.likeDislike,
-  );
-  const usersItemsList = useSelector(
-    (state: RootState) => state.check.usersItemsList,
   );
 
   const [moveDisable, setMoveDisable] = useState(false);
 
-  const renderUsers = (itemUid: string) => {
-    return users.map(user => (
+  const renderUsers = (itemUid: string, orderId: any) => {
+    return users.map((user: { uid: string | number | null | undefined; index: number; }) => (
       <CircleUser
+      usersItemsList={usersItemsList}
+      users={users}
+      geo={geo}
+      items={items}
+      fcmToken={fcmToken}
+      orderId={orderId}
         itemUid={itemUid}
         userUid={user.uid}
         key={user.uid}
@@ -108,26 +123,28 @@ export const CheckItem = ({item, simple, disable = false}: Props) => {
   };
 
   const likeDislikeClick = async (
-    itemUid: string,
+    itemUid: any,
     status: boolean,
-    name: string,
-    amount: any,
-    like: boolean,
-    count: any,
-    friends: any,
+    orderId: any,
   ) => {
     if (disable) {
       return;
     }
+    toggleLikeDislike(itemUid, status);
     const formData = new FormData();
     formData.append(
       'data',
-      `{\"uid\":"${getUniqueId()}" , \"fcm\" :"${fcmToken}", \"positions\" : [{"name":"${name}","amount":${amount},"like":${
-        like ? 1 : 0
-      },"count":${count},"friends":"${friends}"}]}`,
+       items,
     );
-    await loadData(formData);
-    toggleLikeDislike(itemUid, status);
+    console.log(items)
+    axios
+    .post('http://biller2.teo-crm.com/api/user/load', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Access-Control-Allow-Origin': '*',
+      },
+    }).then(res => {
+    });
     storeLikes();
   };
 
@@ -138,7 +155,7 @@ export const CheckItem = ({item, simple, disable = false}: Props) => {
     return (
       <View style={styles.row}>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {renderUsers(item.uid)}
+          {renderUsers(item.uid, item.orderId)}
         </ScrollView>
         <View style={{flex: 1}} />
         {item.count > 1 && !disable && (
@@ -152,11 +169,7 @@ export const CheckItem = ({item, simple, disable = false}: Props) => {
             likeDislikeClick(
               item.uid,
               true,
-              item.text,
-              item.price,
-              true,
-              item.count,
-              '1,2',
+              item.orderId || undefined,
             )
           }>
           <Image source={likeIcon} style={styles.likeIcon} />
@@ -166,11 +179,7 @@ export const CheckItem = ({item, simple, disable = false}: Props) => {
             likeDislikeClick(
               item.uid,
               false,
-              item.text,
-              item.price,
-              false,
-              item.count,
-              '1,2',
+              item.orderId || undefined,
             )
           }>
           <Image source={dislikeIcon} />

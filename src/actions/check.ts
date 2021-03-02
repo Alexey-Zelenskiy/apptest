@@ -99,6 +99,15 @@ export const setLikeDislikeAction = (uid: string, status: boolean): SetLikeDisli
     return {type: SET_LIKE_DISLIKE, payload: {uid, status}}
 };
 
+export interface SetOrderId extends Action {
+    payload: { order_id: any };
+}
+
+export const SET_ORDER_ID = "SET_ORDER_ID";
+export const setOrder = (order_id: any): SetOrderId => {
+    return {type: SET_ORDER_ID, payload: {order_id}}
+};
+
 export interface SetPriceActions extends Action {
     payload: { itemUid: string, price: number }
 }

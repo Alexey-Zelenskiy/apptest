@@ -16,6 +16,8 @@ export interface Item {
     count: number;
     text: string;
     price: number;
+    like?: any;
+    orderId?: undefined;
 }
 
 export interface ParsedCheckData {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {Image, PixelRatio, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {arrowLeftIcon, chevronDownIcon} from "../constants/images";
 import firestore from "@react-native-firebase/firestore";
@@ -17,12 +17,17 @@ import {useActions} from "../hooks/actions";
 import {useState} from "react";
 import {ActivityIndicator} from "react-native-paper";
 import useTranslation from "../hooks/useTranslation";
+import {getUniqueId, getManufacturer} from 'react-native-device-info';
+import { CameraState } from "../reducers/camera";
+import { loadData } from "../api";
 
 const History = () => {
 
     const navigation = useNavigation();
     const {setCheck, setHistory} = useActions();
     const history = useSelector((state: RootState) => state.check.history);
+    const fcmToken = useSelector((state: CameraState) => state.fcm);
+    const geo = useSelector((state: CameraState) => state.geo);
     const {formatMessage: f} = useTranslation();
 
     const [loading, setLoading] = useState(false);
