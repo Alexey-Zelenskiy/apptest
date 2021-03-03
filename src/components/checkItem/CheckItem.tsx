@@ -131,6 +131,7 @@ export const CheckItem = ({
       return;
     }
     toggleLikeDislike(itemUid, status);
+     storeLikes();
     const formData = new FormData();
     formData.append(
       'data',
@@ -145,7 +146,6 @@ export const CheckItem = ({
       },
     }).then(res => {
     });
-    storeLikes();
   };
 
   const renderBottomRow = () => {

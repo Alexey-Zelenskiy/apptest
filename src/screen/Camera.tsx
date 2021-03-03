@@ -192,38 +192,6 @@ const Camera = () => {
 		requestLocationsPermission().then();
 	},[])
 
-	const checkStorage = useCallback (async () => {
-		const granted = Platform.OS === 'android'
-			? await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then()
-			: await check(PERMISSIONS.IOS.PHOTO_LIBRARY).then();
-		console.log(granted, 'gran')
-		setExternalStorage(granted)
-	},[])
-
-	const requestStoragePermission = useCallback (async () => {
-		Platform.OS === 'android' ?
-			request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
-				.then(result => {
-					console.log('PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE', result);
-					setExternalStorage(result)
-				})
-				.catch(error => {
-					console.log(error);
-				}) : request(PERMISSIONS.IOS.PHOTO_LIBRARY)
-				.then(result => {
-					console.log('PERMISSIONS.IOS.PHOTO_LIBRARY', result);
-					setExternalStorage(result)
-				})
-				.catch(error => {
-					console.log(error);
-				})
-	},[])
-
-	useEffect(() => {
-		if(externalStorage){
-			checkStorage().then();
-		}
-	}, [externalStorage, checkStorage]);
 
 	const camera = useRef<RNCamera | null>(null);
 
@@ -434,13 +402,7 @@ const Camera = () => {
 						</TouchableOpacity>
 					</View>
 					 <View style={{flex: 1, justifyContent: "center", alignItems: 'center'}}>
-						<TouchableOpacity onPress={ async () => {
-							await requestStoragePermission();
-							await checkStorage();
-							if(externalStorage === 'granted'){
-								choiceFileFormGallery();
-							}
-						}}>
+						<TouchableOpacity onPress={choiceFileFormGallery}>
 							<Image source={galleryIcon}/>
 						</TouchableOpacity>
 					</View>
@@ -453,7 +415,7 @@ const Camera = () => {
 	return (
 		<View style={styles.container}>
 			{renderPreviewModal()}
-			{permission && renderCameraOrPhoto()}
+			{renderCameraOrPhoto()}
 			{renderCropModal()}
 			<Dialog
 				visible={isUploading}>
